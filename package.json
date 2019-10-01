@@ -2,7 +2,7 @@
   "name": "promise-multi-lock",
   "version": "1.0.0",
   "description": "",
-  "main": ",/lib/index.js",
+  "main": "./lib/index.js",
   "scripts": {
     "test": "tsc && jest"
   },
