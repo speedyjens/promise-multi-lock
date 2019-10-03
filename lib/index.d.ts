@@ -9,5 +9,7 @@ export declare class MultiLock {
     constructor();
     lock(res: string): Promise<void>;
     unlock(res: string): void;
+    destroy(res: string): void;
+    is_locked(res: string): boolean;
 }
 export {};

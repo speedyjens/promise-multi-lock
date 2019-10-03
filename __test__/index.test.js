@@ -6,6 +6,23 @@ const wait = (time) => {
 	})
 }
 
+expect.extend({
+	toBeWithinRange(received, floor, ceiling) {
+		const pass = received >= floor && received <= ceiling;
+		if (pass) {
+			return {
+				message: () => `expected ${received} not to be within range ${floor} - ${ceiling}`,
+				pass: true,
+			};
+		} else {
+			return {
+				message: () => `expected ${received} to be within range ${floor} - ${ceiling}`,
+				pass: false,
+			};
+		}
+	}
+});
+
 test("Locks a resource and access it out of order", async () => {
 	let combined = "";
 
@@ -73,3 +90,32 @@ test("Throws error and propegates the error correctly", async () => {
 	expect(first_error).toBe(null);
 	expect(second_error).toBeInstanceOf(Error);
 })
+
+test("Lock should be freed in 1 second", async () => {
+	const multi_lock = new lock.MultiLock();
+	await multi_lock.lock("skdo");
+	let first = new Date().getTime();
+	setTimeout(() => {
+		multi_lock.unlock("skdo");
+	}, 1000);
+	await multi_lock.lock("skdo");
+	expect(new Date().getTime() - first).toBeWithinRange(980, 1050);
+});
+
+test("Lock should be destroyed and queue shouldnt be executed afterwards, lock should be unlocked", done => {
+	const multi_lock = new lock.MultiLock();
+	let has_run = false;
+	setTimeout(() => {
+		multi_lock.destroy("banan");
+		setTimeout(() =>  {
+			expect(has_run).toBe(false);
+			expect(multi_lock.is_locked("banan")).toBe(false);
+			done();
+		}, 1000)
+	}, 1000);
+	multi_lock.lock("banan").then(() => {
+		return multi_lock.lock("banan");
+	}).then(() => {
+		has_run = true;
+	})
+});

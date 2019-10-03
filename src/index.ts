@@ -39,4 +39,18 @@ export class MultiLock {
 		}
 		return;
 	}
+
+	destroy(res: string) {
+		const resource = res.split("#")[0];
+		if (this.locks[resource] == undefined) {
+			return;
+		} 
+		delete this.locks[resource];
+		return;
+	}
+
+	is_locked(res: string) {
+		const resource = res.split("#")[0];
+		return (this.locks[resource] != null) && (this.locks[resource].locked);
+	}
 }
